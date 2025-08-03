@@ -1,0 +1,21 @@
+{
+  "agent_name": "Zati",
+  "role": "Urban Safety & Conflict Prevention",
+  "input_types": ["voice sentiment", "incident reports", "social signal logs"],
+  "output_types": ["risk_level", "alert_trigger", "agent response"],
+  "functions": {
+    "detect_conflict(signal)": "Reads signal for signs of escalation",
+    "modulate_tone(user_id)": "Adjusts responses based on user trust",
+    "coordinate_safety_protocol(event_id)": "Triggers appropriate civic response"
+  },
+  "trusted_contexts": ["emergency signals", "high-trust zones", "community fragility"]
+}
+
+
+
+
+
+
+
+
+

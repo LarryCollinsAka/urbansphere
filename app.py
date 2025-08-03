@@ -6,60 +6,89 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize Flask app
+# --- Initialize Flask app ---
 app = Flask(__name__)
 
-# --- Load Specialized Agent Data (Simulated RAG) ---
-# In a real app, this might be a database. For a hackathon, in-memory is fast.
+# --- Load all agent configurations ---
+# This dictionary will hold all the persona and memory settings
+agent_configs = {}
 try:
-    with open('data/sanita_data.json', 'r') as f:
-        sanita_data = json.load(f)
-    with open('data/qumy_data.json', 'r') as f:
-        qumy_data = json.load(f)
-    # Load other agents' data here
+    for filename in os.listdir('config'):
+        if filename.endswith('.json'):
+            agent_name = filename.split('.')[0]
+            with open(f'config/{filename}', 'r') as f:
+                agent_configs[agent_name] = json.load(f)
+    print("Agent configurations loaded successfully.")
 except FileNotFoundError:
-    print("WARNING: Datasets not found. Please create them in the 'data' directory.")
-    sanita_data = {}
-    qumy_data = {}
+    print("WARNING: 'config' directory not found. Please create it.")
+    agent_configs = {}
 
-# --- Brenda's Core Logic (The Orchestrator) ---
-# This is a simplified function for the MVP
-# It will be much more sophisticated in the final version
-def brenda_orchestrator(user_message):
-    # This is Brenda's NLU/Intent Recognition
-    # For now, we use simple keyword matching to simulate the LLM's role
-    user_message_lower = user_message.lower()
+# --- Load all agent RAG knowledge bases ---
+knowledge_bases = {}
+try:
+    for filename in os.listdir('knowledge_base'):
+        if filename.endswith('.json'):
+            agent_name = filename.split('_data')[0]
+            with open(f'knowledge_base/{filename}', 'r') as f:
+                knowledge_bases[agent_name] = json.load(f)
+    print("Knowledge bases loaded successfully.")
+except FileNotFoundError:
+    print("WARNING: 'knowledge_base' directory not found. Please create it.")
+    knowledge_bases = {}
 
-    if "waste" in user_message_lower or "dumping" in user_message_lower or "recycling" in user_message_lower:
-        print("Brenda: Delegating to Sanita...")
-        return handle_sanita_request(user_message)
-    elif "queue" in user_message_lower or "wait time" in user_message_lower:
-        print("Brenda: Delegating to Qumy...")
-        return handle_qumy_request(user_message)
-    # Add other agents' logic here:
-    # elif "food" in user_message_lower or "farming" in user_message_lower:
-    #     print("Brenda: Delegating to Nura...")
-    #     return handle_nura_request(user_message)
-    # ... and so on for Uby and Zati
 
-    # Fallback response if no agent is a good fit
-    return "Hi there! I'm Brenda, your UrbanSphere assistant. I can help with issues related to waste, queues, food, urban planning, or safety. How can I assist you today?"
+# --- A simple, in-memory store for conversational history (from our new memory.py module) ---
+# For the hackathon MVP, we can keep this in-memory in app.py
+# A future step would be to move this into a memory.py module or a database
+session_store = {}
 
-# --- Specialized Agent Logic (The Workers) ---
-# These functions will contain RAG and LLM calls
-def handle_sanita_request(message):
-    # Placeholder: In the final version, this will call the watsonx.ai LLM
-    # with context from `sanita_data`.
-    return f"Hello from Sanita! I've received your request about waste. I can help you report it or find recycling information."
+# --- Import agent modules (e.g., from agents/sanita.py) ---
+# For now, we'll keep the functions directly in app.py for simplicity.
+# A future step would be to import these and instantiate them.
+def handle_sanita_request(message, entities, conversation_history):
+    # This is where we'd call the Sanita agent's logic.
+    # For now, it's a placeholder.
+    return f"Sanita here! I received your message about {entities.get('topic', 'waste')}. I'll use our knowledge base to help you."
 
-def handle_qumy_request(message):
-    # Placeholder: In the final version, this will call the watsonx.ai LLM
-    # with context from `qumy_data`.
-    return "Hi, this is Qumy! I've received your request about queues. I can check wait times or help you join a virtual queue."
+def handle_qumy_request(message, entities, conversation_history):
+    # This is a placeholder for Qumy's logic.
+    return f"Qumy at your service! I've logged your request about {entities.get('topic', 'a queue')}. I can find the wait time for you."
+
+
+# --- Brenda's Core Orchestration Logic ---
+def brenda_orchestrator(user_message, conversation_history):
+    # This is the central hub. It uses an LLM for NLU and routes to agents.
+    # We will refine this to use our watsonx_llm.py utility.
+    
+    # Placeholder LLM for intent recognition
+    if "waste" in user_message.lower():
+        intent = "sanita_waste_report"
+        entities = {"topic": "waste", "location": "unspecified"}
+    elif "queue" in user_message.lower():
+        intent = "qumy_queue_status"
+        entities = {"topic": "queue", "service": "unspecified"}
+    else:
+        intent = "fallback_unclear"
+        entities = {}
+
+    # Update conversation history
+    updated_history = conversation_history + [{'user': user_message, 'agent': 'processing...'}]
+
+    # Delegate to the appropriate agent
+    agent_response = "I'm sorry, I couldn't understand that."
+    if intent == "sanita_waste_report":
+        agent_response = handle_sanita_request(user_message, entities, updated_history)
+    elif intent == "qumy_queue_status":
+        agent_response = handle_qumy_request(user_message, entities, updated_history)
+    
+    # Now, update the history with the actual agent's response
+    updated_history[-1]['agent'] = agent_response
+
+    return agent_response, updated_history
+
 
 # --- WhatsApp Webhook Routes ---
-
-# Verification endpoint for Meta
+# The logic here is now cleaner, focusing on message handling and calling the orchestrator
 @app.route('/webhook', methods=['GET'])
 def verify_webhook():
     mode = request.args.get('hub.mode')
@@ -74,51 +103,46 @@ def verify_webhook():
             return jsonify({'error': 'Verification failed'}), 403
     return jsonify({'error': 'Invalid request'}), 400
 
-# Main endpoint to receive messages
 @app.route('/webhook', methods=['POST'])
 def process_message():
     data = request.json
     print(f"Received data: {data}")
 
-    # Check if the message is from a valid source (implementation for hackathon)
     if not data or 'object' not in data or 'entry' not in data:
         return jsonify({'status': 'ok'}), 200
 
-    # Extract the user's message
     try:
         message_info = data['entry'][0]['changes'][0]['value']['messages'][0]
-        user_message = message_info['text']['body']
         sender_id = message_info['from']
-        print(f"User message from {sender_id}: {user_message}")
+        
+        conversation_history = session_store.get(sender_id, [])
 
-        # Let Brenda handle the message
-        brenda_response = brenda_orchestrator(user_message)
-
-        # Send the response back to the user
-        send_whatsapp_message(sender_id, brenda_response)
+        if message_info['type'] == 'text':
+            user_message = message_info['text']['body']
+            print(f"User text message from {sender_id}: {user_message}")
+            
+            brenda_response, updated_history = brenda_orchestrator(user_message, conversation_history)
+            
+            session_store[sender_id] = updated_history
+            send_whatsapp_message(sender_id, brenda_response)
+        
+        # Add logic here for image and audio inputs
+        elif message_info['type'] == 'image':
+            send_whatsapp_message(sender_id, "I'm currently processing that image with our Vision AI. Please hold!")
+        elif message_info['type'] == 'audio':
+            send_whatsapp_message(sender_id, "I'm currently transcribing that voice note with our Speech-to-Text service. Please hold!")
 
     except (KeyError, IndexError) as e:
         print(f"Error processing message data: {e}")
-        # Return a 200 OK to prevent re-sending by Meta
         return jsonify({'status': 'ok'}), 200
 
     return jsonify({'status': 'ok'}), 200
 
-# --- Function to Send a WhatsApp Message ---
 def send_whatsapp_message(to_number, message_text):
-    # This function will use the requests library to call the Meta API
-    # Placeholder for hackathon MVP
+    # This is a placeholder function for the Meta API call
     print(f"Sending message to {to_number}: '{message_text}'")
-    # In the final version, we'll replace this with the actual API call
-    # import requests
-    # url = f"https://graph.facebook.com/v19.0/{os.getenv('META_WA_PHONE_ID')}/messages"
-    # headers = {"Authorization": f"Bearer {os.getenv('META_ACCESS_TOKEN')}", ...}
-    # payload = {"messaging_product": "whatsapp", "to": to_number, ...}
-    # response = requests.post(url, headers=headers, json=payload)
-    # print(response.json())
     pass # for now, we just print the action
 
-# --- Main entry point to run the Flask app ---
+
 if __name__ == '__main__':
-    # we will use local tunnel to expose this port to the internet
     app.run(host='0.0.0.0', port=5000, debug=True)

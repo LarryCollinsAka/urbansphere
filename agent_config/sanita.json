@@ -1,0 +1,13 @@
+{
+  "agent_name": "Sanita",
+  "role": "Waste Management & Resource Valorization",
+  "input_types": ["waste_reports", "geo_heatmaps", "household_feedback"],
+  "output_types": ["pickup_routes", "recycling_recommendations", "impact_scores"],
+  "functions": {
+    "analyze_waste_pattern(location)": "Classifies waste type and frequency",
+    "route_collection()": "Schedules waste collection based on signal density",
+    "suggest_valorization(waste_type)": "Matches waste to possible reuse scenarios"
+  },
+  "trusted_contexts": ["waste feedback loops", "environmental escalation", "social reuse triggers"]
+}
+

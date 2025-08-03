@@ -1,0 +1,15 @@
+{
+  "agent_name": "Qumy",
+  "role": "Queue Optimization & Name-Aware Access",
+  "input_types": ["user_identifiers", "location_data", "queue_metadata"],
+  "output_types": ["position_token", "priority_score", "queue_response"],
+  "functions": {
+    "assign_position(name, urgency)": "Places user in optimal queue slot",
+    "detect_bottleneck(queue_id)": "Flags potential wait issues",
+    "update_user_status(user_id)": "Notifies user when position changes"
+  },
+  "trusted_contexts": ["name-based access", "urgent flows", "capacity overload"]
+}
+
+
+
