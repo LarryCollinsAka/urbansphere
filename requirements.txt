@@ -1,0 +1,9 @@
+# Core Web Framework
+Flask
+
+# IBM watsonx.ai SDK
+ibm-watsonx-ai
+
+# For secure API calls and JSON parsing
+requests
+python-dotenv
