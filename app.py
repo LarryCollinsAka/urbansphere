@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,13 +10,12 @@ load_dotenv()
 app = Flask(__name__)
 
 # --- Load all agent configurations ---
-# This dictionary will hold all the persona and memory settings
 agent_configs = {}
 try:
-    for filename in os.listdir('config'):
+    for filename in os.listdir('agent_config'):
         if filename.endswith('.json'):
             agent_name = filename.split('.')[0]
-            with open(f'config/{filename}', 'r') as f:
+            with open(f'agent_config/{filename}', 'r') as f:
                 agent_configs[agent_name] = json.load(f)
     print("Agent configurations loaded successfully.")
 except FileNotFoundError:
@@ -38,29 +37,19 @@ except FileNotFoundError:
 
 
 # --- A simple, in-memory store for conversational history (from our new memory.py module) ---
-# For the hackathon MVP, we can keep this in-memory in app.py
-# A future step would be to move this into a memory.py module or a database
 session_store = {}
 
 # --- Import agent modules (e.g., from agents/sanita.py) ---
-# For now, we'll keep the functions directly in app.py for simplicity.
-# A future step would be to import these and instantiate them.
 def handle_sanita_request(message, entities, conversation_history):
-    # This is where we'd call the Sanita agent's logic.
-    # For now, it's a placeholder.
     return f"Sanita here! I received your message about {entities.get('topic', 'waste')}. I'll use our knowledge base to help you."
 
 def handle_qumy_request(message, entities, conversation_history):
-    # This is a placeholder for Qumy's logic.
     return f"Qumy at your service! I've logged your request about {entities.get('topic', 'a queue')}. I can find the wait time for you."
 
 
 # --- Brenda's Core Orchestration Logic ---
 def brenda_orchestrator(user_message, conversation_history):
     # This is the central hub. It uses an LLM for NLU and routes to agents.
-    # We will refine this to use our watsonx_llm.py utility.
-    
-    # Placeholder LLM for intent recognition
     if "waste" in user_message.lower():
         intent = "sanita_waste_report"
         entities = {"topic": "waste", "location": "unspecified"}
@@ -71,24 +60,20 @@ def brenda_orchestrator(user_message, conversation_history):
         intent = "fallback_unclear"
         entities = {}
 
-    # Update conversation history
     updated_history = conversation_history + [{'user': user_message, 'agent': 'processing...'}]
 
-    # Delegate to the appropriate agent
     agent_response = "I'm sorry, I couldn't understand that."
     if intent == "sanita_waste_report":
         agent_response = handle_sanita_request(user_message, entities, updated_history)
     elif intent == "qumy_queue_status":
         agent_response = handle_qumy_request(user_message, entities, updated_history)
     
-    # Now, update the history with the actual agent's response
     updated_history[-1]['agent'] = agent_response
 
     return agent_response, updated_history
 
 
 # --- WhatsApp Webhook Routes ---
-# The logic here is now cleaner, focusing on message handling and calling the orchestrator
 @app.route('/webhook', methods=['GET'])
 def verify_webhook():
     mode = request.args.get('hub.mode')
@@ -126,7 +111,6 @@ def process_message():
             session_store[sender_id] = updated_history
             send_whatsapp_message(sender_id, brenda_response)
         
-        # Add logic here for image and audio inputs
         elif message_info['type'] == 'image':
             send_whatsapp_message(sender_id, "I'm currently processing that image with our Vision AI. Please hold!")
         elif message_info['type'] == 'audio':
@@ -138,10 +122,32 @@ def process_message():
 
     return jsonify({'status': 'ok'}), 200
 
-def send_whatsapp_message(to_number, message_text):
-    # This is a placeholder function for the Meta API call
-    print(f"Sending message to {to_number}: '{message_text}'")
-    pass # for now, we just print the action
+# --- NEW API ROUTE FOR THE DASHBOARD ---
+@app.route('/api/data')
+def get_dashboard_data():
+    """
+    Returns a JSON object with all the data needed for the dashboard.
+    This includes agent status and the full conversation history.
+    """
+    # Prepare agent status data dynamically from the config folder
+    agent_status = [{"name": name, "status": "Online"} for name in agent_configs.keys()]
+
+    # Format the conversation history for display
+    conversation_log = []
+    for sender_id, history in session_store.items():
+        for interaction in history:
+            # We can't use the 'processing...' placeholder here
+            if interaction['agent'] != 'processing...':
+                conversation_log.append({
+                    "user": interaction['user'],
+                    "agent": interaction['agent'],
+                    "sender_id": sender_id
+                })
+
+    return jsonify({
+        "agent_status": agent_status,
+        "conversations": conversation_log
+    })
 
 
 # --- Main entry point to run the Flask app (UPDATED) ---
@@ -151,9 +157,12 @@ def home():
 
 @app.route('/dashboard')
 def show_dashboard():
-    with open('views/dashboard.html', 'r') as f:
-        return f.read()
+    return render_template('views/dashboard.html')
+
+def send_whatsapp_message(to_number, message_text):
+    print(f"Sending message to {to_number}: '{message_text}'")
+    pass
+
 
 if __name__ == '__main__':
-    # You will use ngrok to expose this port to the internet
     app.run(host='0.0.0.0', port=5000, debug=True)
