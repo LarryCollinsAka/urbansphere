@@ -144,5 +144,16 @@ def send_whatsapp_message(to_number, message_text):
     pass # for now, we just print the action
 
 
+# --- Main entry point to run the Flask app (UPDATED) ---
+@app.route('/')
+def home():
+    return "UrbanSphere is running! Your webhook is at /webhook."
+
+@app.route('/dashboard')
+def show_dashboard():
+    with open('views/dashboard.html', 'r') as f:
+        return f.read()
+
 if __name__ == '__main__':
+    # You will use ngrok to expose this port to the internet
     app.run(host='0.0.0.0', port=5000, debug=True)

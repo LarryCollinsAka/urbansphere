@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanSphere Dashboard</title>
+    <!-- Use a simple, clean font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="min-h-screen p-8 lg:p-12">
+        <header class="bg-white p-6 rounded-2xl shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.405 9.176 5 7.424 5H6a2 2 0 00-2 2v10a2 2 0 002 2h2.24c1.196 0 2.37.199 3.5.586M12 6.253c1.168.848 2.5 1.543 3.5 2.115m-3.5-2.115c1.168.848 2.5 1.543 3.5 2.115C13.882 7.785 15.02 8.357 16.262 8.94c1.23.583 2.35 1.258 3.332 1.948M18 7.5a4.5 4.5 0 014.5 4.5v.5a4.5 4.5 0 01-4.5 4.5H16" />
+                    </svg>
+                    <h1 class="text-3xl font-bold ml-4 text-gray-900">UrbanSphere Dashboard</h1>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Current Status</p>
+                    <span class="inline-flex items-center px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
+                        <span class="w-2 h-2 mr-2 bg-green-500 rounded-full"></span>
+                        Operational
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Agent Status Section -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-900">Agent Status</h2>
+                <div id="agent-status-list" class="space-y-4">
+                    <!-- Agent Card -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <span class="p-3 bg-indigo-100 rounded-xl text-indigo-600">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </span>
+                            <span class="ml-4 font-medium text-gray-700">Brenda (Orchestrator)</span>
+                        </div>
+                        <span class="text-green-500 font-semibold text-sm">Online</span>
+                    </div>
+                    <!-- Agent Card -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <span class="p-3 bg-green-100 rounded-xl text-green-600">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1l-.75-3M3 13h18M6 13h12m-3 0V7a3 3 0 00-3-3H9a3 3 0 00-3 3v6m3 0a3 3 0 00-3-3H6a3 3 0 00-3 3v2a3 3 0 003 3h12a3 3 0 003-3v-2a3 3 0 00-3-3h-3a3 3 0 00-3 3z" />
+                                </svg>
+                            </span>
+                            <span class="ml-4 font-medium text-gray-700">Sanita</span>
+                        </div>
+                        <span class="text-green-500 font-semibold text-sm">Online</span>
+                    </div>
+                    <!-- Agent Card -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center">
+                            <span class="p-3 bg-blue-100 rounded-xl text-blue-600">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1l-.75-3M3 13h18M6 13h12m-3 0V7a3 3 0 00-3-3H9a3 3 0 00-3 3v6m3 0a3 3 0 00-3-3H6a3 3 0 00-3 3v2a3 3 0 003 3h12a3 3 0 003-3v-2a3 3 0 00-3-3h-3a3 3 0 00-3 3z" />
+                                </svg>
+                            </span>
+                            <span class="ml-4 font-medium text-gray-700">Qumy</span>
+                        </div>
+                        <span class="text-green-500 font-semibold text-sm">Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Conversations Section -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-900">Recent Conversations</h2>
+                <div id="conversation-log" class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Conversation Log Item -->
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-600 font-medium">User: There's some illegal dumping on Mvog-Ada.</p>
+                        <p class="text-xs text-gray-500 mt-2">Brenda delegated to Sanita</p>
+                    </div>
+                    <!-- Conversation Log Item -->
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-600 font-medium">User: What's the wait time at the civil registry?</p>
+                        <p class="text-xs text-gray-500 mt-2">Brenda delegated to Qumy</p>
+                    </div>
+                    <!-- Conversation Log Item -->
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-600 font-medium">User: Hello Brenda, how are you?</p>
+                        <p class="text-xs text-gray-500 mt-2">Brenda responded directly (Fallback Greeting)</p>
+                    </div>
+                    <!-- Conversation Log Item -->
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-600 font-medium">User: Can you tell me about urban farming?</p>
+                        <p class="text-xs text-gray-500 mt-2">Brenda delegated to Nura</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
