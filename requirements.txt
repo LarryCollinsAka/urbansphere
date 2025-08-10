@@ -1,5 +1,6 @@
 # Core Web Framework
 Flask
+gunicorn
 
 # IBM watsonx.ai SDK
 ibm-watsonx-ai
