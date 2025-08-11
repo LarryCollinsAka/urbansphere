@@ -4,27 +4,45 @@ from pymongo.errors import ConnectionFailure
 from urllib.parse import quote_plus
 import os
 
-# Get the connection URI from the environment variables.
-# We'll use quote_plus to handle special characters in the password.
-password = quote_plus(os.environ.get('MONGO_DB_PASSWORD', ''))
-uri = f"mongodb+srv://{os.environ.get('MONGO_DB_USER', '')}:{password}@{os.environ.get('MONGO_DB_CLUSTER', '')}/?retryWrites=true&w=majority"
+# A global variable to store the database client once it's created.
+client = None
 
-# Create a new client and connect to the server
-try:
-    client = MongoClient(uri, server_api=ServerApi('1'))
-    # Send a ping to confirm a successful connection
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except ConnectionFailure:
-    print("Failed to connect to MongoDB.")
-    client = None
+def initialize_db_client():
+    """
+    Initializes the MongoDB client.
+    This function will only run once to create a single client instance.
+    """
+    global client
+    if client is not None:
+        return client
+
+    # Get the connection URI from the environment variables.
+    password = quote_plus(os.environ.get('MONGO_DB_PASSWORD', ''))
+    uri = f"mongodb+srv://{os.environ.get('MONGO_DB_USER', '')}:{password}@{os.environ.get('MONGO_DB_CLUSTER', '')}/?retryWrites=true&w=majority"
+
+    try:
+        # Create a new client and connect to the server
+        client = MongoClient(uri, server_api=ServerApi('1'))
+        # Send a ping to confirm a successful connection
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except ConnectionFailure as e:
+        print(f"Failed to connect to MongoDB. Reason: {e}")
+        client = None
+    except Exception as e:
+        print(f"An unexpected error occurred during MongoDB connection: {e}")
+        client = None
+
+    return client
 
 def get_db():
     """
     Returns the MongoDB database object for UrbanSphere.
+    It will first ensure the client is initialized.
     """
-    if client is not None:
-        return client.urbansphere_db
+    db_client = initialize_db_client()
+    if db_client is not None:
+        return db_client.urbansphere_db
     print("WARNING: Database client is not connected.")
     return None
 
@@ -68,7 +86,7 @@ def get_conversation_history(conversation_id):
     else:
         print(f"WARNING: Could not retrieve conversation history. Database connection not available.")
     return []
-    
+
 def get_all_conversations():
     """
     Retrieves all conversations from the 'conversations' collection.
