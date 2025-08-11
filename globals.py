@@ -3,7 +3,7 @@ This module holds global application state to avoid circular imports.
 """
 
 from data.loader import load_agent_configs, load_knowledge_bases
-from utils.memory import session_store
+#from utils.memory import session_store
 
 # Load our data into these global variables at startup
 agent_configs = load_agent_configs()
