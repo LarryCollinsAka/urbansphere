@@ -25,6 +25,7 @@ def get_db():
     """
     if client is not None:
         return client.urbansphere_db
+    print("WARNING: Database client is not connected.")
     return None
 
 def save_conversation(conversation_id, conversation_data):
@@ -33,13 +34,18 @@ def save_conversation(conversation_id, conversation_data):
     """
     db = get_db()
     if db is not None:
-        conversations_collection = db.conversations
-        conversations_collection.update_one(
-            {"_id": conversation_id},
-            {"$set": conversation_data},
-            upsert=True
-        )
-        print(f"Conversation with ID '{conversation_id}' saved to database.")
+        try:
+            conversations_collection = db.conversations
+            conversations_collection.update_one(
+                {"_id": conversation_id},
+                {"$set": conversation_data},
+                upsert=True
+            )
+            print(f"Conversation with ID '{conversation_id}' successfully saved to database.")
+        except Exception as e:
+            print(f"ERROR: Failed to save conversation with ID '{conversation_id}'. Reason: {e}")
+    else:
+        print(f"WARNING: Could not save conversation with ID '{conversation_id}'. Database connection not available.")
 
 def get_conversation_history(conversation_id):
     """
@@ -47,7 +53,36 @@ def get_conversation_history(conversation_id):
     """
     db = get_db()
     if db is not None:
-        conversations_collection = db.conversations
-        conversation = conversations_collection.find_one({"_id": conversation_id})
-        return conversation.get('history', []) if conversation else []
+        try:
+            conversations_collection = db.conversations
+            conversation = conversations_collection.find_one({"_id": conversation_id})
+            if conversation:
+                print(f"Successfully retrieved conversation history for ID '{conversation_id}'.")
+                return conversation.get('history', [])
+            else:
+                print(f"No conversation history found for ID '{conversation_id}'.")
+                return []
+        except Exception as e:
+            print(f"ERROR: Failed to retrieve conversation with ID '{conversation_id}'. Reason: {e}")
+            return []
+    else:
+        print(f"WARNING: Could not retrieve conversation history. Database connection not available.")
+    return []
+    
+def get_all_conversations():
+    """
+    Retrieves all conversations from the 'conversations' collection.
+    """
+    db = get_db()
+    if db is not None:
+        try:
+            conversations_collection = db.conversations
+            all_conversations = list(conversations_collection.find({}))
+            print("Successfully retrieved all conversations from the database.")
+            return all_conversations
+        except Exception as e:
+            print(f"ERROR: Failed to retrieve all conversations. Reason: {e}")
+            return []
+    else:
+        print(f"WARNING: Could not retrieve all conversations. Database connection not available.")
     return []
