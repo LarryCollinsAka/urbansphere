@@ -4,125 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UrbanSphere Dashboard</title>
-    <!-- Use a simple, clean font from Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
+            background-color: #f7f9fc;
         }
     </style>
 </head>
-<body class="antialiased text-gray-800">
+<body class="p-8 bg-gray-100 min-h-screen">
 
-    <div class="min-h-screen p-8 lg:p-12">
-        <header class="bg-white p-6 rounded-2xl shadow-lg mb-8">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <svg class="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.405 9.176 5 7.424 5H6a2 2 0 00-2 2v10a2 2 0 002 2h2.24c1.196 0 2.37.199 3.5.586M12 6.253c1.168.848 2.5 1.543 3.5 2.115m-3.5-2.115c1.168.848 2.5 1.543 3.5 2.115C13.882 7.785 15.02 8.357 16.262 8.94c1.23.583 2.35 1.258 3.332 1.948M18 7.5a4.5 4.5 0 014.5 4.5v.5a4.5 4.5 0 01-4.5 4.5H16" />
-                    </svg>
-                    <h1 class="text-3xl font-bold ml-4 text-gray-900">UrbanSphere Dashboard</h1>
+    <!-- Header -->
+    <header class="bg-white p-6 rounded-lg shadow-md flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.485 9.497 5 8 5c-4 0-5 2-5 5v12h12v-2a3 3 0 00-3-3H9a3 3 0 00-3 3v2a3 3 0 003 3h2a3 3 0 003-3v-2a3 3 0 003-3v-3m0-3h3m-3 3h3" />
+            </svg>
+            UrbanSphere Dashboard
+        </h1>
+        <div class="flex items-center text-sm text-gray-600">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+            Current Status: <span class="ml-1 font-semibold text-green-600">Operational</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Agent Status Panel -->
+        <div class="col-span-1 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Agent Status</h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-truck text-green-500 text-lg mr-3"></i>
+                        <span class="font-medium text-gray-800">Sanita</span>
+                    </div>
+                    <span class="text-green-500 font-semibold">Online</span>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-500">Current Status</p>
-                    <span class="inline-flex items-center px-3 py-1 text-sm font-semibold text-green-700 bg-green-100 rounded-full">
-                        <span class="w-2 h-2 mr-2 bg-green-500 rounded-full"></span>
-                        Operational
-                    </span>
+                <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marked-alt text-blue-500 text-lg mr-3"></i>
+                        <span class="font-medium text-gray-800">Qumy</span>
+                    </div>
+                    <span class="text-green-500 font-semibold">Online</span>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot text-purple-500 text-lg mr-3"></i>
+                        <span class="font-medium text-gray-800">Brenda</span>
+                    </div>
+                    <span class="text-green-500 font-semibold">Online</span>
                 </div>
             </div>
-        </header>
+        </div>
 
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Agent Status Section -->
-            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-bold mb-4 text-gray-900">Agent Status</h2>
-                <div id="agent-status-list" class="space-y-4">
-                    <!-- Dynamic agent status will be injected here -->
-                    <p class="text-gray-500 text-center py-8">Loading agent status...</p>
-                </div>
-            </div>
-
-            <!-- Recent Conversations Section -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-bold mb-4 text-gray-900">Recent Conversations</h2>
-                <div id="conversation-log" class="space-y-4 max-h-96 overflow-y-auto">
-                    <!-- Dynamic conversation log will be injected here -->
-                    <p class="text-gray-500 text-center py-8">Loading conversations...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const agentStatusList = document.getElementById('agent-status-list');
-            const conversationLog = document.getElementById('conversation-log');
-            
-            const agentIcons = {
-                "brenda": '<span class="p-3 bg-indigo-100 rounded-xl text-indigo-600"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></span>',
-                "sanita": '<span class="p-3 bg-green-100 rounded-xl text-green-600"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1l-.75-3M3 13h18M6 13h12m-3 0V7a3 3 0 00-3-3H9a3 3 0 00-3 3v6m3 0a3 3 0 00-3-3H6a3 3 0 00-3 3v2a3 3 0 003 3h12a3 3 0 003-3v-2a3 3 0 00-3-3h-3a3 3 0 00-3 3z" /></svg></span>',
-                "qumy": '<span class="p-3 bg-blue-100 rounded-xl text-blue-600"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1l-.75-3M3 13h18M6 13h12m-3 0V7a3 3 0 00-3-3H9a3 3 0 00-3 3v6m3 0a3 3 0 00-3-3H6a3 3 0 00-3 3v2a3 3 0 003 3h12a3 3 0 003-3v-2a3 3 0 00-3-3h-3a3 3 0 00-3 3z" /></svg></span>',
-            };
-
-            const fetchDashboardData = async () => {
-                try {
-                    const response = await fetch('/api/data');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    // --- Update Agent Status ---
-                    agentStatusList.innerHTML = ''; // Clear existing content
-                    data.agent_status.forEach(agent => {
-                        const agentCard = document.createElement('div');
-                        agentCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-xl';
-                        const icon = agentIcons[agent.name.toLowerCase()] || '<span class="p-3 bg-gray-100 rounded-xl text-gray-600"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>';
-                        agentCard.innerHTML = `
-                            <div class="flex items-center">
-                                ${icon}
-                                <span class="ml-4 font-medium text-gray-700">${agent.name.charAt(0).toUpperCase() + agent.name.slice(1)}</span>
+        <!-- Recent Conversations Panel -->
+        <div class="col-span-1 md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Conversations</h2>
+            <div class="h-96 overflow-y-auto">
+                {% if conversations %}
+                    {% for conversation in conversations %}
+                        <div class="mb-6 p-4 border rounded-lg bg-gray-50">
+                            <div class="flex justify-between items-center mb-2 border-b pb-2">
+                                <h3 class="text-lg font-bold text-gray-800">Conversation with: {{ conversation._id }}</h3>
+                                <!-- Show a timestamp or last message time -->
                             </div>
-                            <span class="text-green-500 font-semibold text-sm">${agent.status}</span>
-                        `;
-                        agentStatusList.appendChild(agentCard);
-                    });
-
-                    // --- Update Conversation Log ---
-                    conversationLog.innerHTML = ''; // Clear existing content
-                    if (data.conversations.length === 0) {
-                        conversationLog.innerHTML = '<p class="text-gray-500 text-center py-8">No conversations yet.</p>';
-                    } else {
-                        data.conversations.slice(-5).reverse().forEach(convo => { // Show the 5 most recent
-                            const convoItem = document.createElement('div');
-                            convoItem.className = 'p-4 bg-gray-50 rounded-xl';
-                            convoItem.innerHTML = `
-                                <p class="text-sm text-gray-600 font-medium">From: ${convo.sender_id.substring(0, 10)}... (User)</p>
-                                <p class="text-sm text-gray-600 font-medium mt-2">User: ${convo.user}</p>
-                                <p class="text-xs text-gray-500 mt-2">Agent Response: ${convo.agent}</p>
-                            `;
-                            conversationLog.appendChild(convoItem);
-                        });
-                    }
-
-                } catch (error) {
-                    console.error('Failed to fetch dashboard data:', error);
-                    agentStatusList.innerHTML = '<p class="text-red-500 text-center py-8">Error loading data.</p>';
-                    conversationLog.innerHTML = '<p class="text-red-500 text-center py-8">Error loading data.</p>';
-                }
-            };
-
-            // Fetch data initially and then every 3 seconds
-            fetchDashboardData();
-            setInterval(fetchDashboardData, 3000);
-        });
-    </script>
-
+                            <div class="space-y-3">
+                                {% for message in conversation.history %}
+                                    <div class="p-3 rounded-lg {% if message.role == 'user' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                        <p class="font-semibold">{{ message.role|capitalize }}:</p>
+                                        <p class="text-sm">{{ message.user if message.user else message.response }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-gray-500 p-8">
+                        <p class="mb-2">No conversations yet.</p>
+                        <p class="text-sm">Send a message to your webhook to start a conversation!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>
