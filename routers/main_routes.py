@@ -14,7 +14,9 @@ def dashboard():
     """
     db = db_service.get_db()
     conversations = []
-    if db:
+    
+    # CORRECTED: Use 'is not None' for truth value testing
+    if db is not None:
         # Get all conversations from the 'conversations' collection
         conversations_collection = db.conversations
         conversations = list(conversations_collection.find({}))
