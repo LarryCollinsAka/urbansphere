@@ -23,7 +23,7 @@ def get_db():
     """
     Returns the MongoDB database object for UrbanSphere.
     """
-    if client:
+    if client is not None:
         return client.urbansphere_db
     return None
 
@@ -32,7 +32,7 @@ def save_conversation(conversation_id, conversation_data):
     Saves a conversation to the 'conversations' collection.
     """
     db = get_db()
-    if db:
+    if db is not None:
         conversations_collection = db.conversations
         conversations_collection.update_one(
             {"_id": conversation_id},
@@ -46,7 +46,7 @@ def get_conversation_history(conversation_id):
     Retrieves a conversation's history from the 'conversations' collection.
     """
     db = get_db()
-    if db:
+    if db is not None:
         conversations_collection = db.conversations
         conversation = conversations_collection.find_one({"_id": conversation_id})
         return conversation.get('history', []) if conversation else []
