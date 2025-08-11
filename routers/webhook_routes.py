@@ -6,7 +6,7 @@ from services import db_service
 
 webhook_bp = Blueprint('webhook', __name__)
 
-@webhook_bp.route('/', methods=['GET', 'POST'])
+@webhook_bp.route('', methods=['GET', 'POST'])
 def webhook():
     if request.method == "GET":
         mode = request.args.get("hub.mode")
