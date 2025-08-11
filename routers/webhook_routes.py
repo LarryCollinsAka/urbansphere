@@ -1,62 +1,54 @@
+from flask import Blueprint, request
 import os
-from flask import Blueprint, request, jsonify
+import json
 from controllers.brenda_controller import brenda_orchestrator
-# Import from the new globals module instead of app.py
-import globals as app_globals
+from services import db_service
 
-from services.whatsapp_service import send_whatsapp_message
-
-# Create a Blueprint for our webhook routes
 webhook_bp = Blueprint('webhook', __name__)
 
-@webhook_bp.route('', methods=['GET'])
-def verify_webhook():
-    mode = request.args.get('hub.mode')
-    token = request.args.get('hub.verify_token')
-    challenge = request.args.get('hub.challenge')
+@webhook_bp.route('/', methods=['GET', 'POST'])
+def webhook():
+    if request.method == "GET":
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
 
-    if mode and token:
-        if mode == 'subscribe' and token == os.getenv('META_VERIFY_TOKEN'):
-            print('WEBHOOK_VERIFIED')
-            return challenge, 200
+        if mode and token:
+            if mode == "subscribe" and token == os.environ.get("META_VERIFY_TOKEN"):
+                print("WEBHOOK_VERIFIED")
+                return challenge, 200
+            else:
+                return "Verification token mismatch", 403
         else:
-            return jsonify({'error': 'Verification failed'}), 403
-    return jsonify({'error': 'Invalid request'}), 400
+            return "Missing parameters", 400
 
-@webhook_bp.route('', methods=['POST'])
-def process_message():
-    data = request.json
-    print(f"Received data: {data}")
-
-    if not data or 'object' not in data or 'entry' not in data:
-        return jsonify({'status': 'ok'}), 200
-
-    try:
-        message_info = data['entry'][0]['changes'][0]['value']['messages'][0]
-        sender_id = message_info['from']
+    if request.method == "POST":
+        data = request.get_json()
+        print("Received webhook data:")
+        print(json.dumps(data, indent=2))
         
-        # Use the session_store from the new globals module
-        conversation_history = app_globals.session_store.get(sender_id, [])
+        # Check if it's a valid WhatsApp message event
+        if data.get("object") == "whatsapp_business_account":
+            for entry in data.get("entry", []):
+                for change in entry.get("changes", []):
+                    value = change.get("value", {})
+                    # Make sure it's a new message
+                    if "messages" in value:
+                        for message in value.get("messages", []):
+                            if message["type"] == "text":
+                                user_message = message["text"]["body"]
+                                user_id = message["from"]
 
-        if message_info['type'] == 'text':
-            user_message = message_info['text']['body']
-            print(f"User text message from {sender_id}: {user_message}")
-            
-            # --- Call Brenda's Orchestration Logic ---
-            brenda_response, updated_history = brenda_orchestrator(user_message, conversation_history)
-            
-            # Update the session_store from the new globals module
-            app_globals.session_store[sender_id] = updated_history
-            send_whatsapp_message(sender_id, brenda_response)
-        
-        # Add logic here for image and audio inputs
-        elif message_info['type'] == 'image':
-            send_whatsapp_message(sender_id, "I'm currently processing that image with our Vision AI. Please hold!")
-        elif message_info['type'] == 'audio':
-            send_whatsapp_message(sender_id, "I'm currently transcribing that voice note with our Speech-to-Text service. Please hold!")
+                                # Retrieve conversation history from the database
+                                conversation_history = db_service.get_conversation_history(user_id)
+                                
+                                # Call the orchestrator with the retrieved history
+                                brenda_response, new_history = brenda_orchestrator(user_message, conversation_history)
+                                
+                                # Save the updated conversation history to the database
+                                db_service.save_conversation(user_id, {"history": new_history})
 
-    except (KeyError, IndexError) as e:
-        print(f"Error processing message data: {e}")
-        return jsonify({'status': 'ok'}), 200
+                                print(f"Brenda response: {brenda_response}")
+        return {"status": "ok"}, 200
 
-    return jsonify({'status': 'ok'}), 200
+    return "Method not allowed", 405

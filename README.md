@@ -9,3 +9,5 @@ A City that Listens, Learns and Understands, Speaks, Nurtures and Aids.
 - pip install -r requirements.txt
 - python app.py
 
+mongodb+srv://clatehlarry:<db_password>@cluster0.v192e.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
