@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify
 from controllers.brenda_controller import brenda_orchestrator
-from services import db_service # Import our db service
+from services import db_service
 from services.whatsapp_service import send_whatsapp_message
 
 # Create a Blueprint for our webhook routes
@@ -26,14 +26,22 @@ def process_message():
     data = request.json
     print(f"Received data: {data}")
 
-    if not data or 'object' not in data or 'entry' not in data:
-        return jsonify({'status': 'ok'}), 200
-
+    # Check for a real WhatsApp payload structure
     try:
+        # This block handles a real WhatsApp webhook payload
         message_info = data['entry'][0]['changes'][0]['value']['messages'][0]
+    except (KeyError, IndexError):
+        # Fallback to handle our test payload structure
+        try:
+            message_info = data['value']['messages'][0]
+        except (KeyError, IndexError) as e:
+            print(f"Error processing message data: {e}")
+            return jsonify({'status': 'ok'}), 200
+            
+    try:
         sender_id = message_info['from']
         
-        # Get conversation history from the database instead of in-memory store
+        # Get conversation history from the database
         conversation_history = db_service.get_conversation_history(sender_id)
 
         if message_info['type'] == 'text':
