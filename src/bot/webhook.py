@@ -3,7 +3,7 @@ import os
 
 bot_blueprint = Blueprint("bot", __name__)
 
-@bot_blueprint.route("/", methods=["GET"])
+@bot_blueprint.route("", methods=["GET"])
 def verify():
     # WhatsApp webhook verification
     verify_token = os.getenv("VERIFY_TOKEN")
@@ -15,7 +15,7 @@ def verify():
             return challenge, 200
     return "Verification failed", 403
 
-@bot_blueprint.route("/", methods=["POST"])
+@bot_blueprint.route("", methods=["POST"])
 def webhook():
     # WhatsApp webhook receiver
     data = request.get_json()
