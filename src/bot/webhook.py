@@ -23,13 +23,17 @@ def send_whatsapp_message(recipient_wa_id, message_text):
     return resp
 
 def brenda_route_and_reply(message_text):
-    if "waste" in message_text.lower() or "bin" in message_text.lower():
+    text = message_text.lower()
+    if any(greet in text for greet in ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]):
+        agent = "Brenda"
+        response = "😁 Hi there! I'm Brenda, your city's digital coordinator. It's wonderful to hear from you! How can I assist you today? You can ask about waste (Sanita), mobility (Qumy), or city safety (Uby)."
+    elif "waste" in text or "bin" in text:
         agent = "Sanita"
         response = "Sanita here! I can help with waste and bins. What do you need?"
-    elif "bus" in message_text.lower() or "transport" in message_text.lower():
+    elif "bus" in text or "transport" in text:
         agent = "Qumy"
         response = "Qumy here! I handle transport and mobility queries."
-    elif "light" in message_text.lower() or "safety" in message_text.lower():
+    elif "light" in text or "safety" in text:
         agent = "Uby"
         response = "Uby here! I can assist with city safety or lighting issues."
     else:
