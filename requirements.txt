@@ -1,7 +1,8 @@
 # Core Web Framework
 Flask
+flask_migrate
 gunicorn
-pymongo[srv]
+#pymongo[srv]
 
 # IBM watsonx.ai SDK
 ibm-watsonx-ai
