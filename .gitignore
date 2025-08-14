@@ -5,4 +5,8 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
-.DS_Store
+.DS_Store.env 
+.env
+__pycache__/
+*.db
+*.sqlite
