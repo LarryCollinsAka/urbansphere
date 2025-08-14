@@ -10,3 +10,5 @@ ibm-watsonx-ai
 # For secure API calls and JSON parsing
 requests
 python-dotenv
+pytesseract
+Pillow

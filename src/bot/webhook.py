@@ -1,8 +1,24 @@
 import os
 import requests
+import json
 from flask import Blueprint, request, jsonify
+from src.agents.brenda import Brenda
+from src.agents.qumy import Qumy
+from src.agents.sanita import Sanita
+from src.agents.uby import Uby
+from src.models.watsonx_service import WatsonxService
 
 bot_blueprint = Blueprint("bot", __name__)
+
+# Initialize the agents and services once
+watsonx_service = WatsonxService(
+    api_key=os.getenv("WATSONX_API_KEY"),
+    project_id=os.getenv("WATSONX_PROJECT_ID")
+)
+brenda = Brenda(watsonx_client=watsonx_service)
+qumy = Qumy(watsonx_client=watsonx_service) # You'll need to update Qumy to accept watsonx_client
+sanita = Sanita(watsonx_client=watsonx_service, qumy_client=qumy)
+uby = Uby(watsonx_client=watsonx_service)
 
 def send_whatsapp_message(recipient_wa_id, message_text):
     phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
@@ -22,28 +38,9 @@ def send_whatsapp_message(recipient_wa_id, message_text):
     print("WhatsApp API response:", resp.status_code, resp.text)
     return resp
 
-def brenda_route_and_reply(message_text):
-    text = message_text.lower()
-    if any(greet in text for greet in ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]):
-        agent = "Brenda"
-        response = "😁 Hi there! I'm Brenda, your city's digital coordinator. It's wonderful to hear from you! How can I assist you today? You can ask about waste (Sanita), mobility (Qumy), or city safety (Uby)."
-    elif "waste" in text or "bin" in text:
-        agent = "Sanita"
-        response = "Sanita here! I can help with waste and bins. What do you need?"
-    elif "bus" in text or "transport" in text:
-        agent = "Qumy"
-        response = "Qumy here! I handle transport and mobility queries."
-    elif "light" in text or "safety" in text:
-        agent = "Uby"
-        response = "Uby here! I can assist with city safety or lighting issues."
-    else:
-        agent = "Brenda"
-        response = ("Hi, I'm Brenda, your city's digital coordinator. "
-                    "You can ask about waste (Sanita), mobility (Qumy), or city safety (Uby).")
-    return agent, response
-
 @bot_blueprint.route("", methods=["GET"])
 def verify():
+    # Your verification logic remains the same
     verify_token = os.getenv("VERIFY_TOKEN")
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
@@ -57,6 +54,7 @@ def verify():
 def webhook():
     data = request.get_json()
     print("Received WhatsApp message:", data)
+    wa_id = None
     try:
         entry = data["entry"][0]
         change = entry["changes"][0]
@@ -64,19 +62,33 @@ def webhook():
         messages = value.get("messages")
         if messages:
             message = messages[0]
-            text_body = message["text"]["body"]
             wa_id = message["from"]
-            contact_name = value["contacts"][0]["profile"]["name"]
-            print(f"Received WhatsApp message from {contact_name} ({wa_id}): {text_body}")
+            text_body = message["text"]["body"] # Assumes text for now
+            
+            # Use Brenda's function calling to get a structured response
+            brenda_response = brenda.orchestrate_message(text_body)
+            tool_name = brenda_response.get('tool')
+            arguments = brenda_response.get('arguments', {})
+            
+            # For testing, we'll just send back a message confirming the routing
+            if tool_name == "add_task":
+                final_response = f"Brenda has routed your request to add a task. Issue: {arguments.get('issue')}, Location: {arguments.get('location')}."
+            elif tool_name == "get_task_status":
+                final_response = f"Brenda has routed your request to get task status. Ticket ID: {arguments.get('ticket_id')}."
+            elif tool_name == "greet":
+                final_response = "Hi there! I'm Brenda. It's nice to meet you! How can I assist?"
+            elif tool_name == "get_bin_location":
+                final_response = f"Brenda has routed your request to find a bin near: {arguments.get('user_location')}."
+            else:
+                final_response = f"Brenda didn't understand that and has routed your request as unknown. Reason: {arguments.get('reason')}."
 
-            # Route to Brenda, get response
-            agent, reply_text = brenda_route_and_reply(text_body)
-            print(f"Routed to agent: {agent}, Reply: {reply_text}")
-
-            # Send WhatsApp reply
-            send_whatsapp_message(wa_id, reply_text)
+            print(f"Final response: {final_response}")
+            send_whatsapp_message(wa_id, final_response)
         else:
             print("No message found in payload")
     except Exception as e:
-        print("Error parsing WhatsApp message:", e)
+        print("Error processing WhatsApp message:", e)
+        if wa_id:
+            send_whatsapp_message(wa_id, "I'm sorry, an unexpected error occurred.")
+        
     return jsonify(status="received"), 200
