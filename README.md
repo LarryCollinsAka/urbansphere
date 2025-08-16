@@ -1,52 +1,80 @@
 # UrbanSphere
 A City that Listens, Learns and Understands, Speaks, Nurtures and Aids.
 
-# Sustainable Cities & Communities - SDG 11 Hackathon Project
+# Urban SDG Platform MVP
 
-## Project Overview
-This project aims to empower citizens and city officials with tools for:
-- Waste management and reporting
-- Smart mobility solutions
-- Urban safety and sustainability monitoring
-- Community engagement
-- All coordinated via WhatsApp and an admin dashboard
+## Overview
+A hackathon MVP for SDG 11: Sustainable Cities and Communities, built with Flask and a lightweight JavaScript frontend. Key features:
+- Housing upgrade suggestions
+- Urban air quality info
+- Civic participation feedback
 
-**Tech Stack**:  
-- Python 3.x  
-- Flask (MVC pattern)  
-- WhatsApp Cloud API (Meta)  
-- Render.com for deployment
+## Setup
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app/main.py
+```
 
+## Usage
+- Open your browser at `http://localhost:5000`
+- Try the buttons for Air Quality, Housing, and Civic Feedback
+
+## Next Steps
+- Integrate real APIs (Watsonx, WhatsApp, etc.)
+- Connect to a database
+- Expand endpoints and UI
 ---
 
 ## Folder Structure
 
 ```
 project-root/
-│
-├── README.md
-├── .gitignore
-├── requirements.txt
-├── .env.example
-│
-├── src/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── housing.py
+│   │   ├── air_quality.py
+│   │   ├── civic.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── watsonx.py
+│   │   ├── whatsapp.py
+│   │   ├── air_quality.py
 │   ├── models/
-│   ├── views/
-│   ├── controllers/
-│   ├── bot/
-│   ├── static/
-│   ├── templates/
-│   ├── utils/
-│   └── app.py
-│
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── housing.py
+│   │   ├── feedback.py
+│   ├── db.py
+│   ├── config.py
+│   └── utils.py
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── images/
+├── templates/
+│   ├── base.html
+│   ├── index.html
+│   ├── dashboard.html
+│   ├── housing.html
+│   ├── air_quality.html
+│   ├── civic.html
 ├── tests/
-├── scripts/
+│   ├── test_routes.py
+│   ├── test_services.py
+├── requirements.txt
+├── .env
+├── README.md
+├── run.py
 ├── .github/
 │   └── workflows/
-└── docs/
-```
-
----
+│       └── ci-cd.yml
 
 ## Quick Start
 
