@@ -7,8 +7,8 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, '..', 'static')
 KB_PATH = os.path.join(BASE_DIR, 'knowledge_base.json')
 
-# Replace with your Meta Cloud verify token
-META_VERIFY_TOKEN = "YOUR_VERIFY_TOKEN"
+# Set your Meta Cloud verify token here
+META_VERIFY_TOKEN = "@@germanicayoomee1206"
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
@@ -66,22 +66,31 @@ def brenda_answer():
 
     return jsonify(brenda_response)
 
-# --- WhatsApp Webhook Verification (GET) ---
+# --- WhatsApp Webhook Verification (GET) with debugging ---
 @app.route("/webhook/whatsapp", methods=["GET"])
 def whatsapp_verify():
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
+    print("---- WhatsApp Webhook Verification ----")
+    print(f"Received GET /webhook/whatsapp with:")
+    print(f"  hub.mode = {mode}")
+    print(f"  hub.verify_token = {token}")
+    print(f"  hub.challenge = {challenge}")
+    print(f"  META_VERIFY_TOKEN (local) = {META_VERIFY_TOKEN}")
     if mode == "subscribe" and token == META_VERIFY_TOKEN:
+        print("  Verification successful! Returning challenge.")
         return challenge, 200
+    print("  Verification failed! Returning 403 Forbidden.")
     return "Forbidden", 403
 
-# --- WhatsApp Webhook for Incoming Messages (POST) ---
+# --- WhatsApp Webhook for Incoming Messages (POST) with debugging ---
 @app.route("/webhook/whatsapp", methods=["POST"])
 def whatsapp_webhook():
-    data = request.get_json()
-    # The structure below is typical for Meta WhatsApp Cloud API
+    print("---- WhatsApp Webhook Message Received ----")
     try:
+        data = request.get_json()
+        print("Raw JSON payload:", json.dumps(data, indent=2))
         entry = data.get("entry", [])[0]
         changes = entry.get("changes", [])[0]
         value = changes.get("value", {})
@@ -90,7 +99,7 @@ def whatsapp_webhook():
             msg = messages[0]
             text = msg.get("text", {}).get("body", "")
             sender = msg.get("from", "")
-            # Call Brenda (stub)
+            print(f"Incoming WhatsApp message from {sender}: {text}")
             kb = load_knowledge_base()
             context = {
                 "best_practices": kb.get("urban_best_practices", []),
@@ -98,10 +107,8 @@ def whatsapp_webhook():
                 "housing": kb.get("housing_upgrade_tips", []),
                 "feedback_examples": kb.get("civic_feedback_examples", [])
             }
-            # TODO: Replace with call to Granite LLM
             answer = f"Brenda (stub): You said '{text}'. Here's a tip: {context['best_practices'][0]}"
-            # Log or process as needed
-            print(f"WhatsApp message from {sender}: {text}")
+            print("Brenda response:", answer)
         else:
             print("No WhatsApp message found in webhook payload.")
     except Exception as e:
