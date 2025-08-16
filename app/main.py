@@ -2,8 +2,11 @@ from flask import Flask, render_template, jsonify, request
 import os
 
 # Set template folder explicitly to handle Render's working directory
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '..', 'templates')
-app = Flask(__name__, template_folder=TEMPLATE_DIR)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, '..', 'templates')
+STATIC_DIR = os.path.join(BASE_DIR, '..', 'static')
+
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 @app.route('/')
 def index():
