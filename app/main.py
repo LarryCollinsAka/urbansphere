@@ -67,7 +67,7 @@ def brenda_answer():
     return jsonify(brenda_response)
 
 # --- WhatsApp Webhook Verification (GET) ---
-@app.route("webhook/whatsapp", methods=["GET"])
+@app.route("/webhook/whatsapp", methods=["GET"])
 def whatsapp_verify():
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
@@ -77,7 +77,7 @@ def whatsapp_verify():
     return "Forbidden", 403
 
 # --- WhatsApp Webhook for Incoming Messages (POST) ---
-@app.route("webhook/whatsapp", methods=["POST"])
+@app.route("/webhook/whatsapp", methods=["POST"])
 def whatsapp_webhook():
     data = request.get_json()
     # The structure below is typical for Meta WhatsApp Cloud API
