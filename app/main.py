@@ -1,14 +1,15 @@
 import os
 import json
 from flask import Flask, render_template, jsonify, request
+from brenda import ask_brenda
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, '..', 'static')
-KB_PATH = os.path.join(BASE_DIR, 'knowledge_base.json')
+KB_PATH = os.path.join(BASE_DIR, 'app/knowledge_base.json')
 
-# Set your Meta Cloud verify token here
-META_VERIFY_TOKEN = "@@germanicayoomee1206"
+# Load Meta Cloud verify token from environment
+META_VERIFY_TOKEN = os.getenv("META_VERIFY_TOKEN")
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
@@ -48,23 +49,18 @@ def civic_feedback_examples():
 
 @app.route("/api/brenda", methods=["POST"])
 def brenda_answer():
-    kb = load_knowledge_base()
     data = request.get_json()
     question = data.get("question", "")
-
-    context = {
-        "best_practices": kb.get("urban_best_practices", []),
-        "air_quality": kb.get("air_quality_actions", []),
-        "housing": kb.get("housing_upgrade_tips", []),
-        "feedback_examples": kb.get("civic_feedback_examples", [])
-    }
-
-    brenda_response = {
-        "answer": f"Brenda (stub): I received your question: '{question}'. My knowledge base contains helpful info!",
-        "context": context
-    }
-
-    return jsonify(brenda_response)
+    print(f"[Brenda Prompt Lab] User question: {question}")
+    try:
+        brenda_response = ask_brenda(question)
+        print(f"[Brenda Response] {json.dumps(brenda_response, indent=2)}")
+        # Return only the assistant's reply text for convenience
+        answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
+        return jsonify({"answer": answer, "raw": brenda_response})
+    except Exception as e:
+        print(f"[Brenda Error] {e}")
+        return jsonify({"error": str(e)}), 500
 
 # --- WhatsApp Webhook Verification (GET) with debugging ---
 @app.route("/webhook/whatsapp", methods=["GET"])
@@ -77,14 +73,14 @@ def whatsapp_verify():
     print(f"  hub.mode = {mode}")
     print(f"  hub.verify_token = {token}")
     print(f"  hub.challenge = {challenge}")
-    print(f"  META_VERIFY_TOKEN (local) = {META_VERIFY_TOKEN}")
+    print(f"  META_VERIFY_TOKEN (env) = {META_VERIFY_TOKEN}")
     if mode == "subscribe" and token == META_VERIFY_TOKEN:
         print("  Verification successful! Returning challenge.")
         return challenge, 200
     print("  Verification failed! Returning 403 Forbidden.")
     return "Forbidden", 403
 
-# --- WhatsApp Webhook for Incoming Messages (POST) with debugging ---
+# --- WhatsApp Webhook for Incoming Messages (POST) with Brenda integration ---
 @app.route("/webhook/whatsapp", methods=["POST"])
 def whatsapp_webhook():
     print("---- WhatsApp Webhook Message Received ----")
@@ -100,15 +96,11 @@ def whatsapp_webhook():
             text = msg.get("text", {}).get("body", "")
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
-            kb = load_knowledge_base()
-            context = {
-                "best_practices": kb.get("urban_best_practices", []),
-                "air_quality": kb.get("air_quality_actions", []),
-                "housing": kb.get("housing_upgrade_tips", []),
-                "feedback_examples": kb.get("civic_feedback_examples", [])
-            }
-            answer = f"Brenda (stub): You said '{text}'. Here's a tip: {context['best_practices'][0]}"
-            print("Brenda response:", answer)
+            # Call Brenda (Granite)
+            brenda_response = ask_brenda(text)
+            answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
+            print(f"Brenda response: {answer}")
+            # TODO: Send 'answer' back to WhatsApp using Meta Cloud API (outbound)
         else:
             print("No WhatsApp message found in webhook payload.")
     except Exception as e:
