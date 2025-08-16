@@ -77,7 +77,7 @@ def whatsapp_verify():
     return "Forbidden", 403
 
 # --- WhatsApp Webhook for Incoming Messages (POST) ---
-@app.route("/webhook/whatsapp", methods=["POST"])
+@app.route("webhook/whatsapp", methods=["POST"])
 def whatsapp_webhook():
     data = request.get_json()
     # The structure below is typical for Meta WhatsApp Cloud API
