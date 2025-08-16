@@ -1,8 +1,7 @@
 # Core Web Framework
 Flask
 flask_migrate
-gunicorn
-#pymongo[srv]
+
 
 # IBM watsonx.ai SDK
 ibm-watsonx-ai
@@ -10,6 +9,3 @@ ibm-watsonx-ai
 # For secure API calls and JSON parsing
 requests
 python-dotenv
-pytesseract
-Pillow
-PyYAML
