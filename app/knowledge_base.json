@@ -1,0 +1,51 @@
+{
+  "sdgs": {
+    "SDG 11": {
+      "title": "Sustainable Cities and Communities",
+      "description": "Make cities and human settlements inclusive, safe, resilient and sustainable.",
+      "targets": [
+        "Ensure access to safe and affordable housing",
+        "Reduce the adverse per capita environmental impact of cities",
+        "Provide access to safe, affordable, accessible and sustainable transport systems"
+      ]
+    },
+    "SDG 6": {
+      "title": "Clean Water and Sanitation",
+      "description": "Ensure availability and sustainable management of water and sanitation for all.",
+      "targets": [
+        "Achieve universal access to safe and affordable drinking water",
+        "Improve water quality by reducing pollution",
+        "Expand sanitation facilities"
+      ]
+    }
+  },
+  "urban_best_practices": [
+    "Increase green spaces to improve air quality and mental health.",
+    "Implement affordable housing programs with community input.",
+    "Promote mixed-use development for walkable neighborhoods.",
+    "Upgrade sanitation infrastructure in underserved areas.",
+    "Use sensors and open data for real-time urban monitoring."
+  ],
+  "air_quality_actions": [
+    "Promote public transport and cycling to reduce vehicle emissions.",
+    "Plant trees and create urban parks to absorb pollutants.",
+    "Ban open burning of waste in residential areas.",
+    "Encourage clean energy adoption for homes and businesses."
+  ],
+  "housing_upgrade_tips": [
+    "Retrofit buildings for energy efficiency.",
+    "Use locally sourced and sustainable materials.",
+    "Design homes with adequate ventilation.",
+    "Include rainwater harvesting systems in new developments."
+  ],
+  "civic_feedback_examples": [
+    {
+      "feedback": "Need more green spaces.",
+      "response": "Expanding parks and planting trees can improve air quality and provide recreational areas for residents."
+    },
+    {
+      "feedback": "Improve sanitation facilities.",
+      "response": "Upgrading toilets and waste management systems ensures better health and aligns with SDG 6."
+    }
+  ]
+}
