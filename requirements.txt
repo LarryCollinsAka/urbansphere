@@ -1,7 +1,7 @@
 # Core Web Framework
 Flask
 flask_migrate
-
+gunicorn
 
 # IBM watsonx.ai SDK
 ibm-watsonx-ai
