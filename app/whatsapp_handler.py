@@ -43,14 +43,11 @@ def handle_whatsapp_webhook(data):
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
 
-            # Call Brenda's model. This should return a dictionary.
+            # 1. Call Brenda's model. This correctly returns a dictionary.
             brenda_response = ask_brenda(text)
             
-            # Defensive check: if the response is a string, try to parse it.
-            if isinstance(brenda_response, str):
-                brenda_response = json.loads(brenda_response)
-
-            # This line is now safe and correct to parse the API response.
+            # 2. Extract the string content from the nested dictionary.
+            # Your cURL command confirmed the API response has this structure.
             answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
 
             print(f"Brenda response: {answer}")
