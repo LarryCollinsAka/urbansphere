@@ -5,7 +5,7 @@ import json
 # --- Configurations from environment variables ---
 IBM_GRANITE_API_URL = os.getenv("IBM_GRANITE_API_URL", "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29")
 IBM_GRANITE_PROJECT_ID = os.getenv("IBM_GRANITE_PROJECT_ID", "b012ad9b-5420-4b92-a637-354512fd7685")
-IBM_GRANITE_TOKEN = os.getenv("IBM_GRANITE_TOKEN") # Ensure this token is set as an environment variable
+IBM_GRANITE_TOKEN = os.getenv("IBM_GRANITE_TOKEN")
 
 def ask_brenda_with_curl_style(user_message):
     """
@@ -50,10 +50,6 @@ def ask_brenda_with_curl_style(user_message):
             headers=headers,
             json=body
         )
-        # --- CRITICAL DEBUGGING STEP ---
-        print(f"IBM watsonx API Response Status: {response.status_code}")
-        print(f"IBM watsonx API Response Body: {response.text}")
-        
         response.raise_for_status() # Raises an HTTPError if the status is 4xx or 5xx
         return response.json()
     except requests.exceptions.RequestException as e:
