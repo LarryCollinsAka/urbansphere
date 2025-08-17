@@ -24,7 +24,7 @@ def _require_env():
         raise RuntimeError("Missing WATSONX_PROJECT_ID in environment/.env")
 
 def _get_client() -> APIClient:
-    """Singleton APIClient with project set."""
+    """Singleton APIClient with project set (lazy; only created on first real use)."""
     global _client
     _require_env()
     if _client is None:
@@ -32,12 +32,13 @@ def _get_client() -> APIClient:
             if _client is None:
                 creds = Credentials(url=_WATSONX_URL, api_key=_WATSONX_API_KEY)
                 c = APIClient(creds)
+                # Setting the default project is cheap; no network on construction
                 c.set.default_project(_WATSONX_PROJECT_ID)
                 _client = c
     return _client
 
 def get_infer(model_id: Optional[str] = None, **params) -> ModelInference:
-    """Return a cached ModelInference bound to the shared client."""
+    """Return a cached ModelInference bound to the shared client (lazy)."""
     mid = model_id or _DEFAULT_MODEL_ID
     # sensible defaults
     params = dict(params)
@@ -73,9 +74,7 @@ def generate_json(prompt: str, **params) -> Dict[str, Any]:
     return {"error": "json_parse_failed", "raw": raw[:240]}
 
 def health_check() -> bool:
-    """Lightweight check that auth & project are good and a model can be built."""
-    try:
-        _ = get_infer()
-        return True
-    except Exception:
-        return False
+    """
+    Instant, non-network check for startup.
+    """
+    return bool(_WATSONX_URL and _WATSONX_API_KEY and _WATSONX_PROJECT_ID)

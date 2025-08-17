@@ -1,19 +1,21 @@
+
 from pathlib import Path
+import os
+import asyncio
 
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .routers.webhook import router as webhook_router
-from src.services import watsonx_client  
+from src.routers.webhook import router as webhook_router
 
 app = FastAPI(title="UrbanSphere MVP")
 
 # --- Resolve paths relative to this file (src/) ---
-BASE_DIR = Path(__file__).resolve().parent        
-TEMPLATES_DIR = BASE_DIR / "templates"             
-STATIC_DIR = BASE_DIR / "static"                    
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
 
 # Ensure templates dir exists so TemplateResponse won't blow up later
 TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
@@ -24,12 +26,30 @@ if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Routers
-app.include_router(webhook_router)  
+app.include_router(webhook_router)
 
 @app.on_event("startup")
-def _warm_up():
-    # Pre-build client/model so the first user call is fast
-    watsonx_client.health_check()
+async def _warm_up():
+    """
+    Never block app startup. Optionally skip warmup entirely with WX_SKIP_WARMUP=1.
+    Any health check runs in the background.
+    """
+    if os.getenv("WX_SKIP_WARMUP") in ("1", "true", "True"):
+        print("[startup] skipping watsonx warm-up (WX_SKIP_WARMUP=1)")
+        return
+
+    async def _do_check():
+        try:
+            # Import inside task to avoid doing it at import time
+            from src.services import watsonx_client
+            # run the (fast) health_check off the event loop
+            ok = await asyncio.to_thread(watsonx_client.health_check)
+            print(f"[startup] watsonx health_check={ok}")
+        except Exception as e:
+            print(f"[startup] warm-up failed: {e}")
+
+    asyncio.create_task(_do_check())
+    print("[startup] scheduled watsonx health_check in background")
 
 # Minimal dashboard (demo-friendly)
 @app.get("/dashboard", response_class=HTMLResponse)
