@@ -50,12 +50,12 @@ def ask_brenda_with_curl_style(user_message):
             headers=headers,
             json=body
         )
+        # --- CRITICAL DEBUGGING STEP ---
+        print(f"IBM watsonx API Response Status: {response.status_code}")
+        print(f"IBM watsonx API Response Body: {response.text}")
+        
         response.raise_for_status() # Raises an HTTPError if the status is 4xx or 5xx
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error calling IBM watsonx API: {e}")
         return None
-
-# Example usage (you would call this from your whatsapp_handler.py)
-# response_json = ask_brenda_with_curl_style("What is SDG 11 about?")
-# print(response_json)
