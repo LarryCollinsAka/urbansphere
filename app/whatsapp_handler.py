@@ -43,12 +43,15 @@ def handle_whatsapp_webhook(data):
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
 
-            # Brenda now acts as a solo consultant.
-            # Her response is the final answer, so we don't need to parse for tools.
+            # Call Brenda's model. This should return a dictionary.
             brenda_response = ask_brenda(text)
             
-            # Assuming ask_brenda returns a string, we use it directly.
-            answer = brenda_response
+            # Defensive check: if the response is a string, try to parse it.
+            if isinstance(brenda_response, str):
+                brenda_response = json.loads(brenda_response)
+
+            # This line is now safe and correct to parse the API response.
+            answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
 
             print(f"Brenda response: {answer}")
             send_result = send_whatsapp_message(sender, answer)
