@@ -47,7 +47,6 @@ def handle_whatsapp_webhook(data):
             brenda_response = ask_brenda(text)
             
             # 2. Extract the string content from the nested dictionary.
-            # Your cURL command confirmed the API response has this structure.
             answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
 
             print(f"Brenda response: {answer}")
