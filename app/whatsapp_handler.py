@@ -42,8 +42,14 @@ def handle_whatsapp_webhook(data):
             text = msg.get("text", {}).get("body", "")
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
+
+            # Brenda now acts as a solo consultant.
+            # Her response is the final answer, so we don't need to parse for tools.
             brenda_response = ask_brenda(text)
-            answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
+            # Assuming ask_brenda returns a string, we use it directly.
+            answer = brenda_response
+
             print(f"Brenda response: {answer}")
             send_result = send_whatsapp_message(sender, answer)
             print(f"WhatsApp send result: {send_result}")
