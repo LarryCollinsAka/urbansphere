@@ -47,14 +47,18 @@ def handle_whatsapp_webhook(data):
             brenda_response = ask_brenda(text)
             
             # 2. Extract the string content from the deeply nested dictionary.
-            # This is the line that fixes the error.
-            answer = ""
+            answer = "Sorry, I couldn't process your request. Please try again later."
             try:
-                # The response structure is: choices -> message -> content -> [0] -> text
-                answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", [{}])[0].get("text", "")
+                # First, check the most common nested structure for the `text` field.
+                content = brenda_response.get("choices", [{}])[0].get("message", {}).get("content")
+                if isinstance(content, list) and content:
+                    answer = content[0].get("text", answer)
+                elif isinstance(content, str):
+                    # Fallback for when the `content` field is a simple string.
+                    answer = content
             except (IndexError, AttributeError):
-                # Fallback in case the structure is different or unexpected
-                answer = "Sorry, I couldn't process your request. Please try again later."
+                # Fallback in case of an entirely unexpected response structure.
+                pass
             
             print(f"Brenda response: {answer}")
             send_result = send_whatsapp_message(sender, answer)
