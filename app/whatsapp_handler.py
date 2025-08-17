@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from app.brenda import ask_brenda
+from app.brenda import ask_brenda_with_curl_style
 
 WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
 WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
@@ -50,32 +50,25 @@ def handle_whatsapp_webhook(data):
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
 
-            # Call Brenda's model. This returns the API's JSON response as a dictionary.
-            brenda_response = ask_brenda(text)
+            # Call Brenda's model using the function from brenda.py
+            brenda_response = ask_brenda_with_curl_style(text)
             
-            # Defensive check: ensure the response is a dictionary.
-            # This is the logic you suggested, which is a great approach.
-            if isinstance(brenda_response, str):
-                try:
-                    brenda_response = json.loads(brenda_response)
-                except json.JSONDecodeError:
-                    print("Failed to parse brenda_response as JSON")
-                    return None
-            
-            if not isinstance(brenda_response, dict):
-                print("brenda_response is not a dictionary")
-                return None
-            
-            # Now safely extract the string content.
+            # Now, use a robust parsing block to safely extract the string content.
+            # This handles different API response formats and is the key to solving the error.
             answer = "Sorry, I couldn't process your request. Please try again later."
-            try:
-                content = brenda_response.get("choices", [{}])[0].get("message", {}).get("content")
-                if isinstance(content, list) and content and isinstance(content[0], dict):
-                    answer = content[0].get("text", answer)
-                elif isinstance(content, str):
-                    answer = content
-            except (IndexError, AttributeError):
-                pass # The answer remains the default "Sorry..." message.
+            
+            if brenda_response and isinstance(brenda_response, dict):
+                try:
+                    # The most common response format has a nested list inside "content"
+                    content_parts = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", [])
+                    if isinstance(content_parts, list) and content_parts and isinstance(content_parts[0], dict):
+                        answer = content_parts[0].get("text", answer)
+                    elif isinstance(content_parts, str):
+                        # This handles cases where the "content" is a simple string
+                        answer = content_parts
+                except (IndexError, AttributeError, TypeError):
+                    # Fallback for unexpected response structures
+                    print("Error parsing Brenda's response.")
             
             print(f"Brenda response: {answer}")
             send_result = send_whatsapp_message(sender, answer)
