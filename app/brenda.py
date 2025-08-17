@@ -10,7 +10,7 @@ IBM_GRANITE_TOKEN = os.getenv("IBM_GRANITE_TOKEN")
 
 # Path to knowledge base
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-KB_PATH = os.path.join(BASE_DIR, 'knowledge_base.json')
+KB_PATH = os.path.join(BASE_DIR, 'app/knowledge_base.json')
 
 def load_knowledge_base():
     with open(KB_PATH, "r", encoding="utf-8") as f:
