@@ -43,12 +43,19 @@ def handle_whatsapp_webhook(data):
             sender = msg.get("from", "")
             print(f"Incoming WhatsApp message from {sender}: {text}")
 
-            # 1. Call Brenda's model. This returns a dictionary.
+            # 1. Call Brenda's model. This returns the API's JSON response as a dictionary.
             brenda_response = ask_brenda(text)
             
-            # 2. Correctly extract the string content from the nested dictionary.
-            answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", [{}])[0].get("text", "")
-
+            # 2. Extract the string content from the deeply nested dictionary.
+            # This is the line that fixes the error.
+            answer = ""
+            try:
+                # The response structure is: choices -> message -> content -> [0] -> text
+                answer = brenda_response.get("choices", [{}])[0].get("message", {}).get("content", [{}])[0].get("text", "")
+            except (IndexError, AttributeError):
+                # Fallback in case the structure is different or unexpected
+                answer = "Sorry, I couldn't process your request. Please try again later."
+            
             print(f"Brenda response: {answer}")
             send_result = send_whatsapp_message(sender, answer)
             print(f"WhatsApp send result: {send_result}")
