@@ -5,7 +5,7 @@ import json
 # --- Configurations from environment variables ---
 IBM_GRANITE_API_URL = os.getenv("IBM_GRANITE_API_URL", "https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29")
 IBM_GRANITE_PROJECT_ID = os.getenv("IBM_GRANITE_PROJECT_ID", "b012ad9b-5420-4b92-a637-354512fd7685")
-IBM_GRANITE_TOKEN = os.getenv("IBM_GRANITE_TOKEN")
+IBM_GRANITE_TOKEN = os.getenv("IBM_GRANITE_TOKEN", "JY-I68WXjwCzmyi3vzT1Std2W7-7MngNx4EMYkrXK_Gv")
 
 def ask_brenda_with_curl_style(user_message):
     """
